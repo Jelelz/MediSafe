@@ -1,1 +1,1 @@
-A blockchain based EHR web system
+A blockchain-based EHR web system.
