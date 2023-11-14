@@ -1,77 +1,49 @@
-from flask import Flask, request, render_template
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
+from flask import Flask, render_template, request, jsonify
+import json
+from pymongo import MongoClient
 import hashlib
-import datetime
 import urllib.parse
 
-
-class Block:
-    def __init__(self, index, previous_hash, data, timestamp):
-        self.index = index
-        self.previous_hash = previous_hash
-        self.data = data
-        self.timestamp = timestamp
-        self.hash = self.calculate_hash()
-
-    def calculate_hash(self):
-        sha = hashlib.sha256()
-        sha.update((str(self.index) + str(self.previous_hash) + str(self.data) + str(self.timestamp)).encode())
-        return sha.hexdigest()
-
-
-class Blockchain:
-    def __init__(self):
-        self.chain = [self.create_genesis_block()]
-
-    def create_genesis_block(self):
-        return Block(0, "0", "Genesis Block", datetime.datetime.now())
-
-    def get_latest_block(self):
-        return self.chain[-1]
-
-    def add_block(self, new_block):
-        new_block.previous_hash = self.get_latest_block().hash
-        new_block.hash = new_block.calculate_hash()
-        self.chain.append(new_block)
-
-    def is_valid(self):
-        for i in range(1, len(self.chain)):
-            current_block = self.chain[i]
-            previous_block = self.chain[i-1]
-
-            if current_block.hash != current_block.calculate_hash():
-                return False
-
-            if current_block.previous_hash != previous_block.hash:
-                return False
-
-        return True
-
-
-
-blockchain = Blockchain()
+# Creating a new Flask app for MediSafe
 app = Flask(__name__)
 
-# Encode the special characters in the password
-password = urllib.parse.quote("Winner@2001")
+# Escape the username and password
+username = urllib.parse.quote_plus("faithkimokiy")
+password = urllib.parse.quote_plus("Winner2001")
 
-uri = "mongodb+srv://faithkimokiy:{password}@ehr.esz8clu.mongodb.net/?retryWrites=true&w=majority"
+# Creating a Mongodb connection
+client = MongoClient(
+    "mongodb+srv://{}:{}@ehr.sihily9.mongodb.net/?retryWrites=true&w=majority".format(username, password))
+db = client["ehr"]
+collection = db['patient_record']
 
-# Create a new client and connect to MongoDB
-client = MongoClient(uri, server_api=ServerApi('1'))
 
-# Send a ping to confirm a successful connection
-try:
-    client.admin.command('ping')
-    print("Pinged your deployment. You successfully connected to MongoDB!")
-except Exception as e:
-    print(e)
+# a new blockchain function to store the data in blockchain format
+def blockchain(data):
+    # Generate a hash of the data.
+    hash1 = hashlib.sha256(json.dumps(data).encode('utf-8')).hexdigest()
 
-db = client['EHR']  # Use the name of your database
+    # Store the hash of the data in MongoDB.
+    collection.insert_one({
+        'hash': hash1
+    })
 
-# Define a collection to store patient data
-patientsauth_collection = db['patientsauth']
+
+# a new registration function to get the patient's data from the registration form.
+def registration(name, gender, email, password, previous_records, allergies, insurance_provider):
+    # Create a new data object.
+    data = {
+        'name': name,
+        'gender': gender,
+        'email': email,
+        'password': password,
+        'previous_records': previous_records,
+        'allergies': allergies,
+        'insurance_provider': insurance_provider
+    }
+
+    # To store the data in blockchain format
+    blockchain(data)
 
 
 @app.route('/')
@@ -84,34 +56,49 @@ def patient_auth():
     return render_template('patient_auth.html')
 
 
-@app.route('/patient_auth', methods=['POST'])
-def patient_auth_post():
-    name = request.form['name']
-    gender = request.form['gender']
-    previous_records = request.form['previous_records']
-    allergies = request.form['allergies']
-    insurance_provider = request.form['insurance_provider']
+@app.route('/register', methods=['POST'])
+def register():
+    name = request.args.get('name')
+    gender = request.args.get('gender')
+    email = request.args.get('email')
+    password = request.args.get('password')
+    previous_records = request.args.get('previous_records')
+    allergies = request.args.get('allergies')
+    insurance_provider = request.args.get('insurance_provider')
 
-    patient_data = {
-        'name': name,
-        'gender': gender,
-        'previous_records': previous_records,
-        'allergies': allergies,
-        'insurance_provider': insurance_provider
-    }
+    # Registering the patient.
+    registration(name, gender, email, password, previous_records, allergies, insurance_provider)
 
-    # Add patient data to the blockchain
-    new_block = Block(len(blockchain.chain), '', patient_data, datetime.datetime.now())
-    blockchain.add_block(new_block)
-
-    # Store patient data in MongoDB
-    patientsauth_collection.insert_one(patient_data)
-
-    return "Patient data registered successfully!"
+    # Return a success message.
+    return jsonify({'success': True})
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form['email']
+    password = request.form['password']
+
+    # Find the user record in the database.
+    user = collection.find_one({'email': email})
+
+    # Check if the user exists and the password is correct.
+    if user and user['password'] == password:
+        # Retrieve the record hash from the database
+        record_hash = user['hash']
+
+        # Generate the hash from the provided email and password
+        provided_hash = hashlib.sha256(email.encode('utf-8') + password.encode('utf-8')).hexdigest()
+
+        # Compare the hashes to validate the email and password
+        if record_hash == provided_hash:
+            # Login the user and display success message
+            return render_template('patient_dash.html')
+        else:
+            # Hash mismatch, display error message
+            return render_template('error.html', message="Invalid email or password")
+    else:
+        # User not found or password incorrect, display error message
+        return render_template('error.html', message="Invalid email or password")
 
 
 @app.route('/physician')

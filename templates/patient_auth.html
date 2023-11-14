@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Login Page</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
     <style>
         body {
             background-color: #f8f9fa;
@@ -96,7 +97,7 @@
 class="close" title="Close Modal">&times;</span>
 
   <!-- Modal Content -->
-  <form class="modal-content animate" action="/patient_auth.html">
+  <form class="modal-content animate" action="/login" method="post">
     <div class="imgcontainer">
       <img src="img_avatar2.png" alt="Avatar" class="avatar">
         <h2>We are happy to see you back!</h2>
@@ -104,11 +105,11 @@ class="close" title="Close Modal">&times;</span>
 
 
     <div class="container">
-      <label for="uname"><b>Username</b></label>
-      <input type="text" placeholder="Username" name="uname" required>
+      <label for="email"><b>Email</b></label>
+      <input type="email" placeholder="Email" name="email" required><br>
 
-      <label for="psw"><b>Password</b></label>
-      <input type="password" placeholder="Password" name="psw" required><br>
+      <label for="password"><b>Password</b></label>
+      <input type="password"  placeholder="Password" name="password" required><br>
 
       <button class="btn btn-primary" type="submit">Login</button>
       <label>
@@ -148,13 +149,12 @@ window.onclick = function(event) {
 class="close" title="Close Modal">&times;</span>
 
   <!-- Modal Content -->
-  <form class="modal-content animate" action="/patient_auth.html">
+  <form class="modal-content animate" action="/register" method="post">
     <div class="imgcontainer">
       <img src="img_avatar2.png" alt="Avatar" class="avatar">
         <h1>Patient Registration</h1>
         <h2>We are happy to see you join us!</h2>
     </div>
-
 
     <div class="container">
       <label for="name"><b>Patient's Name</b></label>
@@ -163,19 +163,23 @@ class="close" title="Close Modal">&times;</span>
       <label for="gender"><b>Gender</b></label>
       <input type="text" placeholder="Enter Gender" name="gender" required><br>
 
+      <label for="email"><b>Email</b></label>
+      <input type="email" placeholder="Email" name="email" required><br>
+
+      <label for="password"><b>Password</b></label>
+      <input type="password"  placeholder="Password" name="password" required><br>
+
       <label for="previous_records"><b>Previous Records</b></label>
       <input type="text" placeholder="Enter Previous Records" name="previous_records" required><br>
 
-        <label for="allergies"><b>Allergies</b></label>
+      <label for="allergies"><b>Allergies</b></label>
       <input type="text" placeholder="Enter your allergies" name="allergies" required><br>
 
-        <label for="insurance_provider"><b>Insurance_provider</b></label>
-        <input type="text" placeholder="Enter your insurance_provider" name="insurance_provider" required><br>
-
       <label for="insurance_provider"><b>Insurance_provider</b></label>
-        <input type="text" placeholder="Enter your insurance_provider" name="insurance_provider" required><br>
+      <input type="text" placeholder="Enter your insurance_provider" name="insurance_provider" required><br>
 
       <button class="btn btn-primary" type="submit">SignUp</button>
+
       <label>
         <input type="checkbox" checked="checked" name="remember"> Remember me
       </label>
@@ -185,6 +189,3 @@ class="close" title="Close Modal">&times;</span>
     </div>
 </body>
 </html>
-
-
-

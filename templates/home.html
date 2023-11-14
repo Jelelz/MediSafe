@@ -1,4 +1,124 @@
 <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Home Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Asap">
+
+  <title>MediSafe</title>
+  <style>
+    body {
+      font-family: "Asap", serif;
+      background-color: #0A1828;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .logo {
+      width: 160px;
+      height: 160px;
+    }
+
+    .content {
+      margin: 0 20px;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #339999;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      background-color: #0A1828;
+          }
+
+      .module{
+      color: #BFA181;
+      font-size: 20px;
+      }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .top {
+      position: fixed;
+      top: 40px;
+      right: 20px;
+    }
+
+    .button {
+      background-color: #0A1828;
+      color: #BFA181;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .button:hover {
+      background-color: #178582;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <img class="logo" src="static/images/logo.png" alt="Logo">
+  </header>
+
+  <div class="content">
+      <div >
+        <img src="https://example.com/logo.png" alt="module1">
+        <h2 class="module">Patient Module</h2>
+          <a href="/patient_auth"> <button class="button">Patient</button> </a>
+      </div>
+
+      <div >
+        <img src="https://example.com/logo.png" alt="module2">
+        <h2 class="module">Physician Module</h2>
+        <button class="button">Physician</button>
+      </div>
+
+      <div >
+        <img src="https://example.com/logo.png" alt="module2">
+        <h2 class="module">Stakeholder Module</h2>
+        <button class="button">Stakeholder</button>
+      </div>
+
+  </div>
+
+  <footer>
+    <p style="color: #339999;"></p>
+  </footer>
+
+  <div class="top">
+
+    <button >Home</button>
+    <button >About</button>
+    <button >Contact</button>
+  </div>
+
+</body>
+</html>
+
+
+
+
+
+<!--<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -71,4 +191,4 @@
 </div>
     </div>
 </body>
-</html>
+</html> -->
