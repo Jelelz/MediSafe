@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physician Dash</title>
     <link rel="stylesheet" href="style.css">
+    <script>
+        // Add event listeners to 'Request Access' buttons
+const requestAccessButtons = document.querySelectorAll('#request-access-btn');
+
+for (const button of requestAccessButtons) {
+    button.addEventListener('click', (event) => {
+        // Extract patient information from the button's parent element
+        const patientName = event.target.parentElement.parentElement.children[0].textContent;
+
+        // Send a request to the server to request access to the patient's medical record
+        // Replace 'YOUR_SERVER_URL' with the actual URL of your server
+        fetch('YOUR_SERVER_URL/request-access/' + patientName)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Access request sent successfully.');
+                } else {
+                    alert('Access request failed. Please try again later.');
+                }
+            });
+    });
+}
+
+    </script>
     <style>table {
     border-collapse: collapse;
     width: 100%;
@@ -48,29 +72,6 @@ Physician Dashboard
         </tbody>
     </table>
 
-    <script>
-        // Add event listeners to 'Request Access' buttons
-const requestAccessButtons = document.querySelectorAll('#request-access-btn');
 
-for (const button of requestAccessButtons) {
-    button.addEventListener('click', (event) => {
-        // Extract patient information from the button's parent element
-        const patientName = event.target.parentElement.parentElement.children[0].textContent;
-
-        // Send a request to the server to request access to the patient's medical record
-        // Replace 'YOUR_SERVER_URL' with the actual URL of your server
-        fetch('YOUR_SERVER_URL/request-access/' + patientName)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Access request sent successfully.');
-                } else {
-                    alert('Access request failed. Please try again later.');
-                }
-            });
-    });
-}
-
-    </script>
 </body>
 </html>

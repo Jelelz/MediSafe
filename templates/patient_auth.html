@@ -2,190 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Login and Registration</title>
     <style>
-        body {
-            background-color: #f8f9fa;
+        #login-form, #register-form {
+            display: none;
         }
-        .container {
-            text-align: center;
-            margin-top: 100px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            font-size: 1.25rem;
-            margin: 10px;
-        }
-
-
-        /* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  padding-top: 60px;
-}
-
-/* Modal Content/Box */
-.modal-content {
-  background-color: #fefefe;
-  margin: 5px auto; /* 15% from the top and centered */
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
-}
-
-/* The Close Button */
-.close {
-  /* Position it in the top right corner outside of the modal */
-  position: absolute;
-  right: 25px;
-  top: 0;
-  color: #000;
-  font-size: 35px;
-  font-weight: bold;
-}
-
-/* Close button on hover */
-.close:hover,
-.close:focus {
-  color: red;
-  cursor: pointer;
-}
-
-/* Add Zoom Animation */
-.animate {
-  -webkit-animation: animatezoom 0.6s;
-  animation: animatezoom 0.6s
-}
-
-@-webkit-keyframes animatezoom {
-  from {-webkit-transform: scale(0)}
-  to {-webkit-transform: scale(1)}
-}
-
-@keyframes animatezoom {
-  from {transform: scale(0)}
-  to {transform: scale(1)}
-}
-
-/*PATIENT LOGIN*/
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>PatientLogin</h1>
-       <!-- Button to open the modal login form -->
-<button class="btn btn-primary" onclick="document.getElementById('id01').style.display='block'">Login</button>
+    <h1>Patient Login and Registration</h1>
 
-<!-- The Modal -->
-<div id="id01" class="modal">
-  <span onclick="document.getElementById('id01').style.display='none'"
-class="close" title="Close Modal">&times;</span>
+    <div id="login-form">
+        <h2>Login</h2>
+        <form action="/patient_auth" method="POST">
+            <input type="hidden" name="action" value="login">
 
-  <!-- Modal Content -->
-  <form class="modal-content animate" action="/patient_auth" method="post">
-    <div class="imgcontainer">
-      <img src="img_avatar2.png" alt="Avatar" class="avatar">
-        <h2>We are happy to see you back!</h2>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            <br>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+
+            <button type="submit" value="Login">Login</button>
+        </form>
     </div>
 
+    <div id="register-form">
+        <h2>Registration</h2>
+        <form action="/patient_auth" method="POST" >
+            <input type="hidden" name="action" value="register">
 
-    <div class="container">
-      <label for="email"><b>Email</b></label>
-      <input type="email" placeholder="Email" name="email" required><br>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <br>
 
-      <label for="password"><b>Password</b></label>
-      <input type="password"  placeholder="Password" name="password" required><br>
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <br>
 
-      <button class="btn btn-primary" type="submit">Login</button>
-      <label>
-        <input type="checkbox" checked="checked" name="remember"> Remember me
-      </label>
+            <label for="email">Email:</label>
+            <input type="email" name="email" required>
+            <br>
+
+            <label for="password">Password:</label>
+            <input type="password" name="password" required>
+            <br>
+
+            <label for="medical-records">Medical Records:</label>
+            <textarea id="medical-records" name="medical-records" rows="5"></textarea>
+            <br>
+
+            <label for="allergies">Allergies:</label>
+            <input type="text" id="allergies" name="allergies" required>
+            <br>
+
+            <label for="insurance-provider">Insurance Provider:</label>
+            <input type="text" id="insurance-provider" name="insurance-provider" required>
+            <br>
+
+
+            <button type="submit" value="Register">Register</button>
+        </form>
     </div>
 
-    <div class="container" style="background-color:#f1f1f1">
-      <button class="btn btn-primary" type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Cancel</button><br>
-      <span class="psw">Forgot <a href="#">password?</a></span><br>
-        <span>I am not registered - <button class="btn btn-primary" onclick="document.getElementById('id02').style.display='block'">SignUp</button></span>
-    </div>
-  </form>
-</div>
-    </div>
-<script>
-// Get the modal
-var modal = document.getElementById('id01');
+    <button onclick="toggleLoginForm()">Login</button>
+    <button onclick="toggleRegisterForm()">Register</button>
 
-// When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
-</script>
-</body>
+    <script>
+        function toggleLoginForm() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        }
 
-
-
-<body>
-    <div class="container">
-
-<!-- The Modal -->
-<div id="id02" class="modal">
-  <span onclick="document.getElementById('id02').style.display='none'"
-class="close" title="Close Modal">&times;</span>
-
-  <!-- Modal Content -->
-  <form class="modal-content animate" action="/register" method="post">
-    <div class="imgcontainer">
-      <img src="img_avatar2.png" alt="Avatar" class="avatar">
-        <h1>Patient Reg</h1>
-        <h2>We are happy to see you join us! Please Add your Info</h2>
-    </div>
-
-    <div class="container">
-      <label for="name"><b>Patient's Name</b></label>
-      <input type="text" placeholder="Enter your name" name="name" required><br>
-
-      <label for="gender"><b>Gender</b></label>
-      <input type="text" placeholder="Enter Gender" name="gender" required><br>
-
-      <label for="email"><b>Email</b></label>
-      <input type="email" placeholder="Email" name="email" required><br>
-
-      <label for="password"><b>Password</b></label>
-      <input type="password"  placeholder="Password" name="password" required><br>
-
-      <label for="previous_records"><b>Previous Records</b></label>
-      <input type="text" placeholder="Enter Previous Records" name="previous_records" required><br>
-
-      <label for="allergies"><b>Allergies</b></label>
-      <input type="text" placeholder="Enter your allergies" name="allergies" required><br>
-
-      <label for="insurance_provider"><b>Insurance_provider</b></label>
-      <input type="text" placeholder="Enter your insurance_provider" name="insurance_provider" required><br>
-
-      <button class="btn btn-primary" type="submit">SignUp</button>
-
-      <label>
-        <input type="checkbox" checked="checked" name="remember"> Remember me
-      </label>
-    </div>
-  </form>
-</div>
-    </div>
+        function toggleRegisterForm() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+    </script>
 </body>
 </html>

@@ -1,13 +1,19 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify
+'''redirect, url_for'''
 import json
 from pymongo import MongoClient
 import hashlib
+from datetime import datetime
 import urllib.parse
+# for password hashing
+import bcrypt
+# for encryption
+from cryptography.fernet import Fernet
 
 # Creating a new Flask app for MediSafe
 app: Flask = Flask(__name__)
 
-# Escape the username and password
+# Escaping the username and password
 username = urllib.parse.quote_plus("faithkimokiy")
 password = urllib.parse.quote_plus("Winner2001")
 
@@ -15,35 +21,96 @@ password = urllib.parse.quote_plus("Winner2001")
 client = MongoClient(
     "mongodb+srv://{}:{}@ehr.sihily9.mongodb.net/?retryWrites=true&w=majority".format(username, password))
 db = client["ehr"]
-collection = db['patient_record']
+collection1 = db['patient_record']
 
 
-# a new blockchain function to store the data in blockchain format
-def blockchain(data):
-    # Generating a hash of the data.
-    hash1 = hashlib.sha256(json.dumps(data).encode('utf-8')).hexdigest()
+# Blockchain class for managing blocks
+class Blockchain:
+    def __init__(self, collection1):
+        self.chain = []
+        self.collection1 = collection1
 
-    # Storing the hash of the data in MongoDB.
-    collection.insert_one({
-        'hash': hash1
+    def create_genesis_block(self, data):
+        genesis_block = Block('0', data)
+        self.chain.append(genesis_block)
+        store_block(genesis_block, self.collection1)
+
+    def add_block(self, data):
+        if not self.chain:
+            # Create a genesis block if the chain is empty
+            self.create_genesis_block(data)
+        else:
+            previous_block = self.chain[-1]
+            new_block = Block(previous_block.hash, data)
+            self.chain.append(new_block)
+            store_block(new_block, self.collection1)
+
+    def is_valid(self):
+        for i in range(1, len(self.chain)):
+            current_block = self.chain[i]
+            previous_block = self.chain[i - 1]
+
+            if current_block.hash != current_block.calculate_hash():
+                return False
+
+            if current_block.previous_hash != previous_block.hash:
+                return False
+
+        return True
+
+
+# This class will represent each block in the chain
+class Block:
+    def __init__(self, previous_hash, data):
+        self.previous_hash = previous_hash
+        self.data = data
+        self.timestamp = datetime.utcnow()
+        self.hash = self.calculate_hash()
+
+    def calculate_hash(self):
+        if self.data is not None:
+            block_data = json.dumps(self.data, sort_keys=True).encode('utf-8')
+            block_hash = hashlib.sha256(block_data).hexdigest()
+            return block_hash
+        else:
+            return None
+
+
+# This function stores block data in the mongodb
+def store_block(block, collection1):
+    collection1.insert_one({
+        'hash': block.hash,
+        'data': block.data
     })
 
 
-# a new registration function to get the patient's data from the registration form.
-def registration(name, gender, email, password, previous_records, allergies, insurance_provider):
-    # Create a new data object.
-    data = {
-        'name': name,
-        'gender': gender,
-        'email': email,
-        'password': password,
-        'previous_records': previous_records,
-        'allergies': allergies,
-        'insurance_provider': insurance_provider
-    }
+# This function will retrieve block data from MongoDB
+def get_block_data(block_hash, collection1):
+    block_data = collection1.find_one({'hash': block_hash})
+    if block_data is not None:
+        return block_data['data']
+    else:
+        return None
 
-    # To store the data in blockchain format
-    blockchain(data)
+
+# Generate a key for encryption (keep this secret and don't share it)
+encryption_key = Fernet.generate_key()
+cipher_suite = Fernet(encryption_key)
+
+
+# Function to encrypt data
+def encrypt_data(data):
+    if data is not None:
+        encrypted_data = cipher_suite.encrypt(data.encode('utf-8'))
+        return encrypted_data
+    else:
+        return None
+
+
+# Function to decrypt data
+def decrypt_data(encrypted_data):
+    decrypted_data = cipher_suite.decrypt(encrypted_data).decode('utf-8')
+    return decrypted_data
 
 
 @app.route('/')
@@ -51,92 +118,105 @@ def home():
     return render_template('home.html')
 
 
-@app.route('/register', methods=['POST'])
-def register():
-    name = request.args.get('name')
-    gender = request.args.get('gender')
-    email = request.args.get('email')
-    password = request.args.get('password')
-    previous_records = request.args.get('previous_records')
-    allergies = request.args.get('allergies')
-    insurance_provider = request.args.get('insurance_provider')
+@app.route('/physician')
+def physician_view():
+    return render_template('physician.html')
 
-    # Registering the patient.
-    registration(name, gender, email, password, previous_records, allergies, insurance_provider)
 
-    # Return a success message.
-    return jsonify({'success': True})
+# Create an instance of Blockchain
+blockchain = Blockchain(collection1)
 
 
 @app.route('/patient_auth', methods=['GET', 'POST'])
 def patient_auth():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-
-        # Find the user record in the database.
-        user = collection.find_one({'email': email})
-
-        # Check if the user exists and the password is correct.
-        if user and user['password'] == password:
-            # Retrieve the EHR record from MongoDB
-            ehr_record = collection.find_one({'hash': user['hash']})
-
-            # Return the EHR record to the user
-            return jsonify({'ehr_record': ehr_record})
-        else:
-            # User not found or password incorrect, display error message
-            return jsonify({'error': 'Invalid email or password'})
-    else:
+    if request.method == 'GET':
         return render_template('patient_auth.html')
 
+    elif request.method == 'POST':
+        action = request.form.get('action')
 
-# Define a list of registered patients
-registered_patients = [
-    {"id": 1, "name": "John Doe"},
-    {"id": 2, "name": "Jane Smith"},
-    {"id": 3, "name": "Peter Jones"},
-]
+        if action == 'login':
+            # Extract login data from request
+            email = request.form.get('email')
+            password = request.form.get('password')
 
-# Define a dictionary to store patient medical records
-patient_records = {
-    1: {"medical_history": "Lorem ipsum dolor sit amet"},
-    2: {"medical_history": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"},
-    3: {
-        "medical_history": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"},
-}
+            # Retrieve corresponding hashed password from the database
+            patient_record = collection1.find_one({'email': encrypt_data(email)})
+            if patient_record is not None:
+                stored_password_hash = patient_record['password']
 
+                # Verify the password
+                if bcrypt.check_password_hash(stored_password_hash, password):
+                    return jsonify({'message': 'Login successful'})
+                else:
+                    return jsonify({'message': 'Invalid credentials'})
+            else:
+                return jsonify({'message': 'Invalid email address'})
 
-# Route for the physician app
-@app.route('/physician', methods=['GET', 'POST'])
-def physician_app():
-    if request.method == 'POST':
-        patient_id = int(request.form['patient_id'])
+        # Handle registration action
+        elif action == 'register':
+            # Extract registration data from request
+            name = request.form.get('name')
+            gender = request.form.get('gender')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            medical_records = request.form.get('medical_records')
+            allergies = request.form.get('allergies')
+            insurance_provider = request.form.get('insurance_provider')
 
-        # Check if the patient is registered
-        if patient_id in patient_records:
-            # Grant access to the patient's medical record
-            return redirect(url_for('physician_view', patient_id=patient_id))
+            # Encrypt sensitive data
+            encrypted_name = encrypt_data(name)
+            encrypted_gender = encrypt_data(gender)
+            encrypted_email = encrypt_data(email)
+            encrypted_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            encrypted_medical_records = encrypt_data(medical_records)
+            encrypted_allergies = encrypt_data(allergies)
+            encrypted_insurance_provider = encrypt_data(insurance_provider)
+
+            # Patient registration data
+            patient_data = {
+                'name': encrypted_name,
+                'gender': encrypted_gender,
+                'email': encrypted_email,
+                'password': encrypted_password,
+                'medical_records': encrypted_medical_records,
+                'allergies': encrypted_allergies,
+                'insurance_provider': encrypted_insurance_provider
+            }
+
+            # Check if there is a previous block for the patient
+            previous_block = collection1.find_one({'email': encrypted_email})
+
+            # If there is no previous block, set the previous_hash to the genesis block hash
+            if previous_block is None:
+                previous_hash = '0'
+            else:
+                previous_hash = previous_block['hash']
+
+            # Create a new block with patient data
+            patient_block = Block(previous_hash, patient_data)
+
+            # Store the block in the patient_blocks collection
+            blockchain.add_block(patient_data)
+
+            # Return success message
+            return jsonify({'message': 'Registration successful'})
+
         else:
-            error_message = "Patient not found"
-            return render_template('physician.html', registered_patients=registered_patients,
-                                   error_message=error_message)
+            raise ValueError('Invalid action: {}'.format(action))
 
-    return render_template('physician.html', registered_patients=registered_patients)
+    return jsonify({'message': 'NO POST/GET'})
 
 
-# Route for viewing a patient's medical record
-@app.route('/physician_view/<int:patient_id>')
-def view_records(patient_id):
-    # Retrieve the patient's medical record
-    medical_history = patient_records[patient_id]['medical_history']
-
-    return render_template('physician_view.html', patient_id=patient_id, medical_history=medical_history)
-
-
-@app.route('/records')
-def records():
-    return render_template('records.html')
+# I want to see the structure of the blockchain
+def print_blockchain_structure():
+    for i, block in enumerate(blockchain.chain):
+        print(f"Block {i + 1}:")
+        print(json.dumps(block.data, indent=2))
+        print("Hash: ", block.hash)
+        print("Previous Hash: ", block.previous_hash)
+        print("Timestamp: ", block.timestamp)
+        print("=" * 30)
 
 
 if __name__ == "__main__":
