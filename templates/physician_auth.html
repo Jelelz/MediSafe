@@ -1,73 +1,78 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-	<title> PHYSICIAN</title>
-
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-
-
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
-    integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous">
-    </script>
-
-</head>
-
-<body id="hello">
-
-<section id="header" class="jumbotron text-center">
-    <h3 class="display-4"> <font color="white"> </font> </h3>
-</section>
-
-<div class="container">
-<form action="/schedule" method="POST">
-  <div class="form-group">
-      <label for="specialized">DOCTOR ID </label>
-      <input type="text" class="form-control" id="docid" name="docid" placeholder="DOCTOR ID">
-  </div>
-  <div class="form-group">
-    <label for="address"> NAME </label>
-    <input type="text" class="form-control" id="nm" name="name" placeholder="NAME OF THE DOCTOR">
-  </div>
- <div class="form-group">
-    <label for="address"> ADDRESS </label>
-    <input type="text" class="form-control" id="address" name="add" placeholder="ADDRESS OF THE CLINIC">
-  </div>
-   <div class="form-group">
-    <label for="address"> BRANCH </label>
-    <input type="text" class="form-control" id="address" name="add" placeholder="LOCATION OF THE CLINIC">
-  </div>
-
-     <button type="submit" class="btn btn-primary" > FIND SCHEDULE </button>
-
-</form>
-
-
-
-  <section id="footer" class="jumbotron text-center">
-    <h4 class="display-4"><font color="black"> <marquee> <h2>GOD CANNOT BE EVEYWHERE , SO HE SENT DOCTORS WITH EXCELLENCE AND SELFLESSNESS </h2></marquee> </font></h4>
-  </section>
-
-</div>
-
-
-<style>
-    #header {
-      background: url("https://images.unsplash.com/photo-1458682625221-3a45f8a844c7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60");
-    }
-  </style>
-
-  <style>
-    #hello{
-    padding: 25px;
-    background: url("https://www.elsetge.cat/myimg/f/10-103918_light-wallpaper-top-beautiful-light-photos-full-hd.jpg");
-    background-repeat: no-repeat;
-    background-size:  1700px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physician Authentication</title>
+    <style>
+        #login-form, #register-form {
+            display: none;
+        }
     </style>
+</head>
+<body>
+    <h1>Welcome to MediSafe Doc</h1>
 
+    <div id="login-form">
+        <h2>Login</h2>
+        <form action="/physician_auth" method="POST">
+            <input type="hidden" name="action" value="login">
 
+            <label for="physician_email">Email:</label>
+            <input type="email" id="physician_email" name="physician_email" required>
+            <br>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+
+            <button type="submit" value="Login">Login</button>
+        </form>
+    </div>
+
+    <div id="register-form">
+        <h2>Please input your Details Doc</h2>
+        <form action="/physician_auth" method="POST" >
+            <input type="hidden" name="action" value="register">
+
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <br>
+
+            <label for="physician_email">Email:</label>
+            <input type="email" name="physician_email" required>
+            <br>
+
+            <label for="password">Password:</label>
+            <input type="password" name="password" required>
+            <br>
+
+            <label for="specialty">Specialty:</label>
+            <select id="specialty" name="specialty" required>
+                <option value="General">General</option>
+                <option value="Psychology">Psychology</option>
+                <option value="Dentist">Dentist</option>
+                <option value="ENT">ENT</option>
+            </select>
+            <br>
+
+            <button type="submit" value="Register">Register</button>
+        </form>
+    </div>
+
+    <button onclick="toggleLoginForm()">Login</button>
+    <button onclick="toggleRegisterForm()">Register</button>
+
+    <script>
+        function toggleLoginForm() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+        }
+
+        function toggleRegisterForm() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+        }
+    </script>
 </body>
 </html>

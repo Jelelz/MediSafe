@@ -2,9 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to your dashboard nani</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
 </head>
 <body>
+    <h1>Welcome to Your Dashboard</h1>
 
+    <h2>Physician Requests</h2>
+    {% for physician in physician_requests %}
+        <div>
+            <p>Name: {{ physician.name }}</p>
+            <p>Email: {{ physician.email }}</p>
+            <p>Specialty: {{ physician.specialty }}</p>
+            <form method="post" action="{{ url_for('process_access_request') }}">
+                <input type="hidden" name="physician_email" value="{{ physician.email }}">
+                <button type="submit" name="grant_access">Grant Access</button>
+                <button type="submit" name="revoke_access">Revoke Access</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <h2>Stakeholder Requests</h2>
+    {% for stakeholder in stakeholder_requests %}
+        <div>
+            <p>Name: {{ stakeholder.name }}</p>
+            <p>Email: {{ stakeholder.email }}</p>
+            <p>Organization: {{ stakeholder.organization }}</p>
+            <form method="post" action="{{ url_for('process_access_request') }}">
+                <input type="hidden" name="stakeholder_email" value="{{ stakeholder.email }}">
+                <button type="submit" name="grant_access">Grant Access</button>
+                <button type="submit" name="revoke_access">Revoke Access</button>
+            </form>
+        </div>
+    {% endfor %}
 </body>
 </html>
