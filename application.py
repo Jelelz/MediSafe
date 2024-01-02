@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, url_for, redirect
 import json
+from flask_session import Session
 from pymongo import MongoClient
 import hashlib
 from datetime import datetime, timezone
@@ -8,6 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # Creating a new Flask app for MediSafe
 app: Flask = Flask(__name__)
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
 # Escaping the username and password
 username = urllib.parse.quote_plus("faithkimokiy")
@@ -21,6 +24,7 @@ collection1 = db['patient_record']
 collection2 = db['physician_record']
 collection3 = db['physician_access']
 collection4 = db['access_requests']
+collection_physician_requests = db['physician_requests']
 
 
 # PATIENT MODULE
@@ -164,7 +168,6 @@ class Blockchain1:
             return block_data['data']
         return None
 
-
     def search_patient_by_id(self, patient_id):
         for block in self.chain:
             if block.data.get('id') == patient_id:
@@ -212,6 +215,17 @@ def get_block1_data(block_hash, collection2):
         return None
 
 
+def update_patient_data(patient_email, updated_data):
+    # Update patient data in the MongoDB collection
+    collection1.update_one(
+        {'data.patient_email': {'$regex': f'^{patient_email}$', '$options': 'i'}},
+        {'$set': {'data.name': updated_data['name'],
+                  'data.gender': updated_data['gender'],
+                  'data.email': updated_data['email'],
+                  'data.insurance_provider': updated_data['insurance_provider']}}
+    )
+
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -244,7 +258,9 @@ def patient_auth():
                 stored_password_hash = patient_records['password']
                 # Verify the password
                 if check_password_hash(stored_password_hash, password):
-                    return jsonify({'message': 'Login successful'})
+                    session['user_email'] = patient_email
+                    session['patient_name'] = patient_records['name']
+                    return redirect(url_for('patient_dashboard'))
                 else:
                     return jsonify({'message': 'Invalid credentials'})
             else:
@@ -293,6 +309,9 @@ def patient_auth():
             # Store the block in the patient_blocks collection
             blockchain.add_block(patient_data)
 
+            # Store user's email in session for future use
+            session['user_email'] = patient_email
+
             # Return success message
             return jsonify({'message': 'Registration successful'})
 
@@ -324,7 +343,9 @@ def physician_auth():
                 stored_password_hash = physician_records['password']
                 # Verify the password
                 if check_password_hash(stored_password_hash, password):
-                    return jsonify({'message': 'Login successful'})
+                    session['user_email'] = physician_email
+                    session['physician_email'] = physician_records['physician_email']
+                    return redirect(url_for('physician_dashboard'))
                 else:
                     return jsonify({'message': 'Invalid credentials'})
             else:
@@ -376,21 +397,168 @@ def physician_auth():
     return jsonify({'message': 'NO POST/GET'})
 
 
-@app.route('/patient_dashboard')
-def patient_dash():
-    return render_template('patient_dash.html')
+# Route to display patient dashboard
+@app.route('/patient_dashboard', methods=['GET', 'POST'])
+def patient_dashboard():
+    if 'user_email' in session:
+        # Retrieve patient email from the session
+        patient_email = session.get('user_email')
+
+        # Fetch patient-specific data from the blockchain
+        patient_data = blockchain.get_patient_data_by_email(patient_email)
+
+        # Fetch physician and stakeholder requests for the patient from MongoDB
+        physician_requests = collection_physician_requests.find({'patient_email': patient_email})
+
+        # Create lists to store fetched data for rendering in the template
+        physician_requests_data = []
+        print("Physician Requests Data:", physician_requests_data)
+
+        # Process physician requests
+        for request_data in physician_requests:
+            physician_data = blockchain1.get_physician_data_by_email(request_data['physician_email'])
+            physician_requests_data.append({
+                'physician_name': physician_data['name'],
+                'physician_email': request_data['physician_email'],
+                'status': request_data['status']
+            })
+
+        # Process stakeholder requests
+
+        return render_template('patient_dash.html', physician_requests=physician_requests_data)
+    else:
+        return redirect(url_for('patient_auth'))
 
 
-@app.route('/patient_account')
+@app.route('/patient_account', methods=['GET', 'POST'])
 def patient_account():
-    return render_template('patient_account.html')
+    if 'user_email' in session:
+        patient_email = session['user_email']
+        patient_data = blockchain.get_patient_data_by_email(patient_email)
+
+        if request.method == 'POST':
+            # Handle form submission for updating editable fields
+            new_name = request.form.get('name')
+            new_gender = request.form.get('gender')
+            new_email = request.form.get('email')
+            new_insurance_provider = request.form.get('insurance_provider')
+
+            # Update patient data in the blockchain
+            if patient_data:
+                patient_data['name'] = new_name
+                patient_data['gender'] = new_gender
+                patient_data['patient_email'] = new_email
+                patient_data['insurance_provider'] = new_insurance_provider
+
+                # Update the patient data in the blockchain
+                update_patient_data(patient_email, patient_data)
+
+                # Fetch the updated patient data
+                patient_data = blockchain.get_patient_data_by_email(new_email)
+
+        return render_template('patient_account.html', patient_data=patient_data)
 
 
-@app.route('/edit_patient_account')
-def edit_patient():
-    return render_template('edit_patient_account.html')
+@app.route('/physician_dashboard')
+def physician_dashboard():
+    # Retrieve a list of all patients from the patient_records collection
+    patients = collection1.find({}, {'data.name': 1, 'data.patient_email': 1})
+
+    # Extract patient data for rendering in the template
+    patients_data = [{'name': patient['data']['name'], 'patient_email': patient['data']['patient_email']} for
+                     patient in patients]
+
+    # Retrieve physician requests from the physician_requests collection
+    physician_requests = collection_physician_requests.find({'physician_email': session['user_email']})
+
+    # Extract physician request data for rendering in the template
+    physician_requests_data = []
+    for request in physician_requests:
+        patient_data = blockchain.get_patient_data_by_email(request['patient_email'])
+        physician_requests_data.append({
+            'patient_name': patient_data['name'],
+            'patient_email': patient_data['patient_email'],
+            'status': request['status']
+        })
+
+    return render_template('physician_dash.html', patients_data=patients_data,
+                           physician_requests_data=physician_requests_data)
 
 
+# Route to handle physician requests
+# Send request will be used to check if the request already exists, If the request
+# is sent successfully, it returns a JSON response.
+@app.route('/send_request', methods=['POST'])
+def send_request():
+    if request.method == 'POST':
+        # Get the patient email from the form
+        patient_email = request.form.get('patient_email')
+
+        # Get physician email from the session
+        physician_email = session.get('user_email')
+
+        # Check if the request already exists
+        existing_request = collection_physician_requests.find_one({
+            'physician_email': physician_email,
+            'patient_email': patient_email
+        })
+
+        if existing_request:
+            return jsonify({'message': 'Request already sent'})
+
+        # If not, create a new request
+        new_request = {
+            'physician_email': physician_email,
+            'patient_email': patient_email,
+            'status': 'Pending'  # Initial status is pending
+        }
+
+        # Insert the request into the collection
+        collection_physician_requests.insert_one(new_request)
+
+        return jsonify({'message': 'Request sent successfully'})
+
+
+# Route to display patient requests
+@app.route('/patient_requests', methods=['GET'])
+def patient_requests():
+    if 'user_email' in session:
+        patient_email = session.get('user_email')
+
+        # Fetch patient requests from MongoDB
+        patient_requests = collection_physician_requests.find({'patient_email': patient_email})
+
+        # Create a list to store fetched data for rendering in the template
+        requests_data = []
+
+        # Process patient requests
+        for request_data in patient_requests:
+            requests_data.append({
+                'physician_name': request_data['physician_name'],
+                'physician_email': request_data['physician_email'],
+                'status': request_data['status']
+            })
+
+        return render_template('patient_dashboard.html', requests_data=requests_data)
+    else:
+        return redirect(url_for('patient_auth'))
+
+
+# Route to handle patient responses to physician requests
+@app.route('/respond_request', methods=['POST'])
+def respond_request():
+    if request.method == 'POST':
+        # Get data from the form
+        physician_email = request.form.get('physician_email')
+        status = request.form.get('status')
+
+        # Update the status in the physician_requests collection
+        collection_physician_requests.update_one(
+            {'physician_email': physician_email, 'patient_email': session['user_email']},
+            {'$set': {'status': status}}
+        )
+
+        return redirect(url_for('patient_dashboard'))
 
 
 if __name__ == "__main__":

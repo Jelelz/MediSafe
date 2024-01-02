@@ -1,39 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard</title>
 </head>
+
 <body>
-    <h1>Welcome to Your Dashboard</h1>
+    <h1>Patient Dashboard</h1>
+    <h2>Welcome, {{ session['patient_name'] }}</h2>
+    <h2>Welcome, {{ session['user_email'] }}</h2>
 
-    <h2>Physician Requests</h2>
-    {% for physician in physician_requests %}
-        <div>
-            <p>Name: {{ physician.name }}</p>
-            <p>Email: {{ physician.email }}</p>
-            <p>Specialty: {{ physician.specialty }}</p>
-            <form method="post" action="{{ url_for('process_access_request') }}">
-                <input type="hidden" name="physician_email" value="{{ physician.email }}">
-                <button type="submit" name="grant_access">Grant Access</button>
-                <button type="submit" name="revoke_access">Revoke Access</button>
-            </form>
-        </div>
-    {% endfor %}
+    <h2>Physician Requests:</h2>
+    {% if physician_requests %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in physician_requests %}
+                    <tr>
+                        <td>{{ request.physician_name }}</td>
+                        <td>{{ request.physician_email }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>
+                            {% if request.status == 'Pending' %}
+                                <form action="/respond_request" method="post">
+                                    <input type="hidden" name="physician_email" value="{{ request.physician_email }}">
+                                    <input type="hidden" name="status" value="Accepted">
+                                    <button type="submit">Accept</button>
+                                </form>
+                                <form action="/respond_request" method="post">
+                                    <input type="hidden" name="physician_email" value="{{ request.physician_email }}">
+                                    <input type="hidden" name="status" value="Revoked">
+                                    <button type="submit">Revoke</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No physician requests at the moment.</p>
+    {% endif %}
 
-    <h2>Stakeholder Requests</h2>
-    {% for stakeholder in stakeholder_requests %}
-        <div>
-            <p>Name: {{ stakeholder.name }}</p>
-            <p>Email: {{ stakeholder.email }}</p>
-            <p>Organization: {{ stakeholder.organization }}</p>
-            <form method="post" action="{{ url_for('process_access_request') }}">
-                <input type="hidden" name="stakeholder_email" value="{{ stakeholder.email }}">
-                <button type="submit" name="grant_access">Grant Access</button>
-                <button type="submit" name="revoke_access">Revoke Access</button>
-            </form>
-        </div>
-    {% endfor %}
 </body>
+
 </html>

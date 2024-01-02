@@ -1,77 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physician Dash</title>
-    <link rel="stylesheet" href="style.css">
-    <script>
-        // Add event listeners to 'Request Access' buttons
-const requestAccessButtons = document.querySelectorAll('#request-access-btn');
-
-for (const button of requestAccessButtons) {
-    button.addEventListener('click', (event) => {
-        // Extract patient information from the button's parent element
-        const patientName = event.target.parentElement.parentElement.children[0].textContent;
-
-        // Send a request to the server to request access to the patient's medical record
-        // Replace 'YOUR_SERVER_URL' with the actual URL of your server
-        fetch('YOUR_SERVER_URL/request-access/' + patientName)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Access request sent successfully.');
-                } else {
-                    alert('Access request failed. Please try again later.');
-                }
-            });
-    });
-}
-
-    </script>
-    <style>table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-th, td {
-    padding: 8px;
-    text-align: left;
-    border: 1px solid #ddd;
-}
-
-#request-access-btn {
-    padding: 5px 10px;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-</style>
+    <title>Physician Dashboard</title>
 </head>
-<body>
-Physician Dashboard
-    <h2>Registered Patients</h2>
 
-    <table id="patients-table">
+<body>
+    <h2>Welcome, {{ session['user_email'] }}</h2>
+
+    <h3>Patients List</h3>
+    <table border="1">
         <thead>
             <tr>
                 <th>Patient Name</th>
-                <th>Request Access</th>
+                <th>Patient Email</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>John Doe</td>
-                <td><button id="request-access-btn">Request Access</button></td>
-            </tr>
-            <tr>
-                <td>Jane Smith</td>
-                <td><button id="">Request Access</button></td>
-            </tr>
+            {% for patient in patients_data %}
+                <tr>
+                    <td>{{ patient.name }}</td>
+                    <td>{{ patient.patient_email }}</td>
+                    <td>
+                        <!-- Add your action buttons here (e.g., Send Request) -->
+                        <!-- You can use a form to handle the action -->
+                        <form action="{{ url_for('send_request') }}" method="post">
+                            <input type="hidden" name="physician_email" value="{{ session.user_email }}">
+                            <input type="hidden" name="patient_email" value="{{ patient.patient_email }}">
+                            <button type="submit">Send Request</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
 
+    <h1>Physician Dashboard</h1>
+    <h2>Welcome, {{ session['user_email'] }}</h2>
+
+    <h2>My Requests:</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Patient Name</th>
+                <th>Patient Email</th>
+                <th>Status</th>
+                <th>Records</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in physician_requests_data %}
+                <tr>
+                    <td>{{ request.patient_name }}</td>
+                    <td>{{ request.patient_email }}</td>
+                    <td>{{ request.status }}</td>
+                    <td>
+                        {% if request.status == 'Accepted' %}
+                            <form action="/view_patient_records" method="post">
+                                <input type="hidden" name="patient_email" value="{{ request.patient_email }}">
+                                <button type="submit">View Records</button>
+                            </form>
+                            <form action="/edit_patient_records" method="post">
+                                <input type="hidden" name="patient_email" value="{{ request.patient_email }}">
+                                <button type="submit">Edit Records</button>
+                            </form>
+                        {% elif request.status == 'Pending' %}
+                            Pending
+                        {% elif request.status == 'Revoked' %}
+                            Revoked
+                        {% endif %}
+                    </td>
+                    <td>
+                        <!-- Add any additional action buttons or info here -->
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Other content for physician dashboard -->
 
 </body>
+
 </html>
