@@ -226,6 +226,15 @@ def update_patient_data(patient_email, updated_data):
     )
 
 
+# This function will be used by a physicican to edit patient's data
+def update_patient_records(patient_email, medical_records, allergies):
+    collection1.update_one(
+        {'data.patient_email': patient_email},
+        {'$set': {'data.medical_records': medical_records, 'data.allergies': allergies}}
+    )
+
+
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -559,6 +568,34 @@ def respond_request():
         )
 
         return redirect(url_for('patient_dashboard'))
+
+
+@app.route('/view_patient_records', methods=['POST'])
+def view_patient_records():
+    if request.method == 'POST':
+        patient_email = request.form.get('patient_email')
+        patient_data = blockchain.get_patient_data_by_email(patient_email)
+
+        return render_template('view_patient_records.html', patient_data=patient_data)
+
+
+@app.route('/edit_patient_records', methods=['POST'])
+def edit_patient_records():
+    if request.method == 'POST':
+        patient_email = request.form.get('patient_email')
+
+        # Retrieve patient data from the patient_records collection
+        patient_data = blockchain.get_patient_data_by_email(patient_email)
+
+        medical_records = request.form.get('medical_records')
+        allergies = request.form.get('allergies')
+
+        # Update patient records
+        update_patient_records(patient_email, medical_records, allergies)
+
+        # Render the template with patient_data
+        return render_template('edit_patient_records.html', patient_data=patient_data)
+
 
 
 if __name__ == "__main__":

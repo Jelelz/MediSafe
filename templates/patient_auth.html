@@ -4,13 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Login and Registration</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Asap">
+
     <style>
         #login-form, #register-form {
             display: none;
         }
+        #logo {
+           width: 160px;
+           height: 160px;
+        }
+
+        body {
+            font-family: "Asap", serif;
+            background-color: #0A1828;
+            color: #BFA181;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #login-form,
+        #register-form {
+            text-align: center;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #339999;
+            border-radius: 5px;
+            max-width: 400px;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 20px auto;
+            margin-bottom: 20px;
+
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #0A1828;
+            color: #BFA181;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background-color: #178582;
+        }
     </style>
 </head>
 <body>
+    <img id="logo"  src="static/images/logo.png" alt="Logo">
     <h1>Welcome to MediSafe</h1>
 
     <div id="login-form">

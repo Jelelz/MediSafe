@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- edit_patient_records.html -->
+
+<h1>Edit Patient Records</h1>
+
+<form action="{{ url_for('edit_patient_records') }}" method="post">
+    <input type="hidden" name="patient_email" value="{{ patient_data.patient_email }}">
+
+    <label for="name">Name:</label>
+    <input type="text" name="name" id="name" value="{{ patient_data.name }}" disabled><br>
+
+    <label for="gender">Gender:</label>
+    <input type="text" name="gender" id="gender" value="{{ patient_data.gender }}" disabled><br>
+
+    <label for="email">Email:</label>
+    <input type="text" name="email" id="email" value="{{ patient_data.patient_email }}" disabled><br>
+
+    <label for="medical_records">Medical Records:</label>
+    <input type="text" name="medical_records" id="medical_records" placeholder="{{ patient_data.medical_records}}" value="{{patient_data.medical_records}}"><br>
+
+    <label for="allergies">Allergies:</label>
+    <input type="text" name="allergies" id="allergies" placeholder="{{ patient_data.allergies }}" value="{{ patient_data.allergies }}"><br>
+
+    <label for="insurance_provider">Insurance Provider:</label>
+    <input type="text" name="insurance_provider" id="insurance_provider" value="{{ patient_data.insurance_provider }}" disabled><br>
+
+    <button type="submit">Save Changes</button>
+</form>
+
+<p><a href="{{ url_for('physician_dashboard') }}">Back to Physician Dashboard</a></p>
+
+
+</body>
+</html>
