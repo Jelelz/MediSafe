@@ -22,9 +22,9 @@ client = MongoClient(
 db = client["ehr"]
 collection1 = db['patient_record']
 collection2 = db['physician_record']
-collection3 = db['physician_access']
-collection4 = db['access_requests']
+collection_stakeholder = db['stakeholder_record']
 collection_physician_requests = db['physician_requests']
+collection_stakeholder_requests = db['stakeholder_requests']
 
 
 # PATIENT MODULE
@@ -33,8 +33,6 @@ class Blockchain:
     def __init__(self, collection1):
         self.chain = []
         self.collection1 = collection1
-        self.collection3 = collection3
-        self.collection4 = collection4
         self.current_id = 1  # Used to uniquely identify patients
 
     def create_genesis_block(self, data):
@@ -215,6 +213,91 @@ def get_block1_data(block_hash, collection2):
         return None
 
 
+# STAKEHOLDER MODULE
+# Blockchain class for managing stakeholders' blocks
+class Blockchain2:
+    def __init__(self, collection_stakeholder):
+        self.chain = []
+        self.collection_stakeholder = collection_stakeholder
+        self.current_id = 1  # Will be used to uniquely identify stakeholders
+
+    def create_genesis_block2(self, data):
+        genesis_block = Block2('0', data)
+        self.chain.append(genesis_block)
+        store_block(genesis_block, self.collection_stakeholder)
+
+    def add_block2(self, data):
+        if not self.chain:
+            # Create a genesis block if the chain is empty
+            self.create_genesis_block2(data)
+        else:
+            previous_block = self.chain[-1]
+            new_block = Block2(self.current_id, previous_block.hash, data)
+            self.current_id += 1  # Incrementing the ID for the next block
+            self.chain.append(new_block)
+            store_block(new_block, self.collection_stakeholder)
+
+    def is_valid2(self):
+        for i in range(1, len(self.chain)):
+            current_block = self.chain[i]
+            previous_block = self.chain[i - 1]
+
+            if current_block.hash != current_block.calculate_hash():
+                return False
+
+            if current_block.previous_hash != previous_block.hash:
+                return False
+
+        return True
+
+    def get_stakeholder_data_by_email(self, stakeholder_email):
+        block_data = collection_stakeholder.find_one(
+            {'data.stakeholder_email': {'$regex': f'^{stakeholder_email}$', '$options': 'i'}})
+        if block_data is not None:
+            return block_data['data']
+        return None
+
+
+# This class will represent each block in the stakeholder chain
+class Block2:
+    def __init__(self, previous_hash, data):
+        self.previous_hash = previous_hash
+        self.data = data
+        self.timestamp = datetime.now(timezone.utc)
+        self.hash = self.calculate_hash()
+
+    def calculate_hash(self):
+        if self.data is not None:
+            # Convert sets to lists before hashing
+            data_for_hashing = convert_sets_to_lists(self.data)
+
+            # Serializing the data to JSON, and handling non-serializable types
+            block_data_str = json.dumps(data_for_hashing, default=str, sort_keys=True)
+            block_data_bytes = block_data_str.encode('utf-8')
+            block_hash = hashlib.sha256(block_data_bytes).hexdigest()
+            return block_hash
+        else:
+            return None
+
+
+# This function stores block data in the MongoDB
+def store_block2(block, collection_stakeholder):
+    collection_stakeholder.insert_one({
+        'hash': block.hash,
+        'data': block.data
+    })
+
+
+# This function will retrieve block data from MongoDB
+def get_block2_data(block_hash, collection_stakeholder):
+    block_data = collection_stakeholder.find_one({'hash': block_hash})
+    if block_data is not None:
+        return block_data['data']
+    else:
+        return None
+
+
+# This is used to update patient records by the patient themselves in the account
 def update_patient_data(patient_email, updated_data):
     # Update patient data in the MongoDB collection
     collection1.update_one(
@@ -243,6 +326,7 @@ def home():
 # Create an instance of Blockchain
 blockchain = Blockchain(collection1)
 blockchain1 = Blockchain1(collection2)
+blockchain2 = Blockchain2(collection_stakeholder)
 
 
 # PATIENT AUTHENTICATION
@@ -406,6 +490,81 @@ def physician_auth():
     return jsonify({'message': 'NO POST/GET'})
 
 
+@app.route('/stakeholder_auth', methods=['GET', 'POST'])
+def stakeholder_auth():
+    if request.method == 'GET':
+        return render_template('stakeholder_auth.html')
+
+    elif request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'login':
+            # Extract login data from request
+            stakeholder_email = request.form.get('stakeholder_email')
+            password = request.form.get('password')
+
+            # Retrieve corresponding hashed password and email from the database
+            stakeholder_records = blockchain2.get_stakeholder_data_by_email(stakeholder_email)
+            print("Retrieved stakeholder records", stakeholder_records)
+
+            if stakeholder_records is not None:
+                stored_password_hash = stakeholder_records['password']
+                # Verify the password
+                if check_password_hash(stored_password_hash, password):
+                    session['user_email'] = stakeholder_email
+                    session['stakeholder_email'] = stakeholder_records['stakeholder_email']
+                    return redirect(url_for('stakeholder_dashboard'))
+                else:
+                    return jsonify({'message': 'Invalid credentials'})
+            else:
+                return jsonify({'message': 'Invalid email address'})
+
+        # Handle registration action
+        elif action == 'register':
+            # Extract registration data from request
+            name = request.form.get('name')
+            stakeholder_email = request.form.get('stakeholder_email')
+            password = request.form.get('password')
+            organization = request.form.get('organization')
+
+            # Hash the password for storage
+            hashed_password = generate_password_hash(password)
+
+            # Stakeholder registration data
+            stakeholder_data = {
+                'name': name,
+                'stakeholder_email': stakeholder_email.lower(),
+                'password': hashed_password,
+                'organization': organization
+            }
+
+            # Debug print
+            print("Stakeholder Data:", stakeholder_data)
+
+            # Check if there is a previous block for the stakeholder
+            previous_block = collection_stakeholder.find_one({'stakeholder_email': stakeholder_email})
+
+            # If there is no previous block, set the previous_hash to the genesis block hash
+            if previous_block is None:
+                previous_hash = '0'
+            else:
+                previous_hash = previous_block['hash']
+
+            # Create a new block with stakeholder data
+            stakeholder_block = Block2(previous_hash, stakeholder_data)
+
+            # Store the block in the stakeholder_blocks collection
+            blockchain2.add_block2(stakeholder_data)
+
+            # Return success message
+            return jsonify({'message': 'Registration successful'})
+
+        else:
+            raise ValueError('Invalid action: {}'.format(action))
+
+    return jsonify({'message': 'NO POST/GET'})
+
+
 # Route to display patient dashboard
 @app.route('/patient_dashboard', methods=['GET', 'POST'])
 def patient_dashboard():
@@ -418,12 +577,13 @@ def patient_dashboard():
 
         # Fetch physician and stakeholder requests for the patient from MongoDB
         physician_requests = collection_physician_requests.find({'patient_email': patient_email})
+        stakeholder_requests = collection_stakeholder_requests.find({'patient_email': patient_email})
 
         # Create lists to store fetched data for rendering in the template
         physician_requests_data = []
-        print("Physician Requests Data:", physician_requests_data)
+        stakeholder_requests_data = []
 
-        # Process physician requests
+        # Physician requests
         for request_data in physician_requests:
             physician_data = blockchain1.get_physician_data_by_email(request_data['physician_email'])
             physician_requests_data.append({
@@ -432,9 +592,16 @@ def patient_dashboard():
                 'status': request_data['status']
             })
 
-        # Process stakeholder requests
+        # Stakeholder requests
+        for request_data in stakeholder_requests:
+            stakeholder_data = blockchain2.get_stakeholder_data_by_email(request_data['stakeholder_email'])
+            stakeholder_requests_data.append({
+                'stakeholder_name': stakeholder_data['name'],
+                'stakeholder_email': request_data['stakeholder_email'],
+                'status': request_data['status']
+            })
 
-        return render_template('patient_dash.html', physician_requests=physician_requests_data)
+        return render_template('patient_dash.html', physician_requests=physician_requests_data, stakeholder_requests=stakeholder_requests_data)
     else:
         return redirect(url_for('patient_auth'))
 
@@ -528,27 +695,81 @@ def send_request():
         return jsonify({'message': 'Request sent successfully'})
 
 
-# Route to display patient requests
-@app.route('/patient_requests', methods=['GET'])
-def patient_requests():
+# Route to handle stakeholder requests
+@app.route('/send_request_stakeholder', methods=['POST'])
+def send_request_stakeholder():
+    if request.method == 'POST':
+        patient_email = request.form.get('patient_email')
+
+        stakeholder_email = session.get('user_email')
+
+        existing_request = collection_stakeholder_requests.find_one({
+            'stakeholder_email': stakeholder_email,
+            'patient_email': patient_email
+        })
+
+        if existing_request:
+            return jsonify({'message': 'Request already sent'})
+
+        # If not, create a new request
+        new_request = {
+            'stakeholder_email': stakeholder_email,
+            'patient_email': patient_email,
+            'status': 'Pending'
+        }
+
+        # Insert the request into the collection
+        collection_stakeholder_requests.insert_one(new_request)
+
+        return jsonify({'message': 'Request sent successfully'})
+
+
+# Route to display physician requests for patient dashboard
+@app.route('/physician_patient_requests', methods=['GET'])
+def physician_patient_requests():
     if 'user_email' in session:
         patient_email = session.get('user_email')
 
         # Fetch patient requests from MongoDB
-        patient_requests = collection_physician_requests.find({'patient_email': patient_email})
+        physician_requests = collection_physician_requests.find({'patient_email': patient_email})
 
         # Create a list to store fetched data for rendering in the template
-        requests_data = []
+        physician_requests_data = []
 
-        # Process patient requests
-        for request_data in patient_requests:
-            requests_data.append({
+        # Process physician requests
+        for request_data in physician_requests:
+            physician_requests_data.append({
                 'physician_name': request_data['physician_name'],
                 'physician_email': request_data['physician_email'],
                 'status': request_data['status']
             })
 
-        return render_template('patient_dashboard.html', requests_data=requests_data)
+        return render_template('patient_dashboard.html', physician_requests_data=physician_requests_data)
+    else:
+        return redirect(url_for('patient_auth'))
+
+
+# Route to display stakeholder requests for patient dashboard
+@app.route('/stakeholder_patient_requests', methods=['GET'])
+def stakeholder_patient_requests():
+    if 'user_email' in session:
+        patient_email = session.get('user_email')
+
+        # Fetch stakeholder requests from MongoDB
+        stakeholder_requests = collection_stakeholder_requests.find({'patient_email': patient_email})
+
+        # Create a list to store fetched data for rendering in the template
+        stakeholder_requests_data = []
+
+        # Process stakeholder requests
+        for request_data in stakeholder_requests:
+            stakeholder_requests_data.append({
+                'stakeholder_name': request_data['stakeholder_name'],
+                'stakeholder_email': request_data['stakeholder_email'],
+                'status': request_data['status']
+            })
+
+        return render_template('patient_dashboard.html', stakeholder_requests_data=stakeholder_requests_data)
     else:
         return redirect(url_for('patient_auth'))
 
@@ -564,6 +785,23 @@ def respond_request():
         # Update the status in the physician_requests collection
         collection_physician_requests.update_one(
             {'physician_email': physician_email, 'patient_email': session['user_email']},
+            {'$set': {'status': status}}
+        )
+
+        return redirect(url_for('patient_dashboard'))
+
+
+# Route to handle patient responses to stakeholder requests
+@app.route('/respond_request_stakeholder', methods=['POST'])
+def respond_request_stakeholder():
+    if request.method == 'POST':
+        # Get data from the form
+        stakeholder_email = request.form.get('stakeholder_email')
+        status = request.form.get('status')
+
+        # Update the status in the stakeholder_requests collection
+        collection_stakeholder_requests.update_one(
+            {'stakeholder_email': stakeholder_email, 'patient_email': session['user_email']},
             {'$set': {'status': status}}
         )
 
@@ -595,6 +833,49 @@ def edit_patient_records():
 
         # Render the template with patient_data
         return render_template('edit_patient_records.html', patient_data=patient_data)
+
+
+@app.route('/stakeholder_dashboard', methods=['GET', 'POST'])
+def stakeholder_dashboard():
+    if 'user_email' in session:
+        stakeholder_email = session['user_email']
+
+        # Retrieve a list of all patients from the patient_records collection
+        patients = collection1.find({}, {'data.name': 1, 'data.patient_email': 1})
+
+        # Extract patient data for rendering in the template
+        patients_data = [{'name': patient['data']['name'], 'patient_email': patient['data']['patient_email']} for
+                         patient in patients]
+
+        # Fetch Stakeholder requests from MongoDB
+        stakeholder_requests = collection_stakeholder_requests.find({'stakeholder_email': stakeholder_email})
+
+        # Create lists to store fetched data for rendering in the template
+        stakeholder_requests_data = []
+
+        # Process stakeholder requests
+        for request in stakeholder_requests:
+            patient_data = blockchain.get_patient_data_by_email(request['patient_email'])
+            stakeholder_requests_data.append({
+                'patient_name': patient_data['name'],
+                'patient_email': patient_data['patient_email'],
+                'status': request['status']
+            })
+
+        return render_template('stakeholder_dash.html', patients_data=patients_data,
+                               stakeholder_requests_data=stakeholder_requests_data)
+    else:
+        return redirect(url_for('stakeholder_auth'))
+
+
+# Route to display patient records for stakeholders
+@app.route('/view_patient_records_stakeholder', methods=['POST'])
+def view_patient_records_stakeholder():
+    if request.method == 'POST':
+        patient_email = request.form.get('patient_email')
+        patient_data = blockchain.get_patient_data_by_email(patient_email)
+
+        return render_template('view_patient_records_stakeholder.html', patient_data=patient_data)
 
 
 

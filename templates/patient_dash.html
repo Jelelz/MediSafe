@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Dashboard</title>
+    <title>Patient Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Asap">
 
@@ -27,8 +27,8 @@
         }
 
         header {
-             text-align: center;
-             margin-top: 50px;
+            text-align: center;
+            margin-top: 50px;
         }
 
         .logo {
@@ -86,15 +86,16 @@
 </head>
 
 <body>
-|<header>
+    <header>
         <img class="logo" src="static/images/logo.png" alt="Logo">
-</header>
-    <h1>My Dashboard</h1>
-    <h2>Welcome to MediSafe, {{ session['patient_name'] }}</h2>
-    <h2>Welcome, {{ session['user_email'] }}</h2>
+    </header>
+    <div class="container">
+        <h1>My Dashboard</h1>
+        <h2>Welcome to MediSafe, {{ session['patient_name'] }}</h2>
+        <h2>Welcome, {{ session['user_email'] }}</h2>
 
-    <h2>Physician Requests:</h2>
-    {% if physician_requests %}
+        <h2>Physician Requests:</h2>
+        {% if physician_requests %}
         <table border="1">
             <thead>
                 <tr>
@@ -106,32 +107,71 @@
             </thead>
             <tbody>
                 {% for request in physician_requests %}
-                    <tr>
-                        <td>{{ request.physician_name }}</td>
-                        <td>{{ request.physician_email }}</td>
-                        <td>{{ request.status }}</td>
-                        <td>
-                            {% if request.status == 'Pending' %}
-                                <form action="/respond_request" method="post">
-                                    <input type="hidden" name="physician_email" value="{{ request.physician_email }}">
-                                    <input type="hidden" name="status" value="Accepted">
-                                    <button type="submit">Accept</button>
-                                </form>
-                                <form action="/respond_request" method="post">
-                                    <input type="hidden" name="physician_email" value="{{ request.physician_email }}">
-                                    <input type="hidden" name="status" value="Revoked">
-                                    <button type="submit">Revoke</button>
-                                </form>
-                            {% endif %}
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ request.physician_name }}</td>
+                    <td>{{ request.physician_email }}</td>
+                    <td>{{ request.status }}</td>
+                    <td>
+                        {% if request.status == 'Pending' %}
+                        <form action="/respond_request" method="post">
+                            <input type="hidden" name="physician_email" value="{{ request.physician_email }}">
+                            <input type="hidden" name="status" value="Accepted">
+                            <button type="submit">Accept</button>
+                        </form>
+                        <form action="/respond_request" method="post">
+                            <input type="hidden" name="physician_email" value="{{ request.physician_email }}">
+                            <input type="hidden" name="status" value="Revoked">
+                            <button type="submit">Revoke</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
-    {% else %}
+        {% else %}
         <p>No physician requests at the moment.</p>
-    {% endif %}
+        {% endif %}
 
+        <h2>Stakeholder Requests:</h2>
+        {% if stakeholder_requests %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in stakeholder_requests %}
+                <tr>
+                    <td>{{ request.stakeholder_name }}</td>
+                    <td>{{ request.stakeholder_email }}</td>
+                    <td>{{ request.status }}</td>
+                    <td>
+                        {% if request.status == 'Pending' %}
+                        <form action="/respond_request_stakeholder" method="post">
+                            <input type="hidden" name="stakeholder_email" value="{{ request.stakeholder_email }}">
+                            <input type="hidden" name="status" value="Accepted">
+                            <button type="submit">Accept</button>
+                        </form>
+                        <form action="/respond_request_stakeholder" method="post">
+                            <input type="hidden" name="stakeholder_email" value="{{ request.stakeholder_email }}">
+                            <input type="hidden" name="status" value="Revoked">
+                            <button type="submit">Revoke</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No stakeholder requests at the moment.</p>
+        {% endif %}
+    </div>
 </body>
 
 </html>
