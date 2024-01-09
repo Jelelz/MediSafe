@@ -27,6 +27,12 @@
       height: 160px;
     }
 
+    .image{
+      width: 200px;
+      height: 200px
+
+    }
+
     .content {
       margin: 0 20px;
       padding: 20px;
@@ -57,14 +63,23 @@
     }
 
     .button {
-      background-color: #0A1828;
-      color: #BFA181;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
-      font-weight: bold;
-    }
+            background-color: #0A1828;
+            color: #BFA181;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+    .button1 {
+            background-color: #0A1828;
+            color: #BFA181;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 1px solid #339999;
+
+        }
 
     .button:hover {
       background-color: #178582;
@@ -81,21 +96,21 @@
 
   <div class="content">
       <div >
-        <img src="https://example.com/logo.png" alt="module1">
+        <img class = "image" src="static/images/patient_animate.jpg" alt="module1">
         <h2 class="module">Patient Module</h2>
-          <a href="/patient_auth"> <button class="button">Patient</button> </a>
+          <a href="/patient_auth"> <button class="button1">Patient</button> </a>
       </div>
 
       <div >
-        <img src="https://example.com/logo.png" alt="module2">
+        <img class = "image" src="static/images/doctor_animate.jpg" alt="module2">
         <h2 class="module">Physician Module</h2>
-          <a href="/physician_auth"> <button class="button">Physician</button> </a>
+          <a href="/physician_auth"> <button class="button1">Physician</button> </a>
       </div>
 
       <div >
-        <img src="https://example.com/logo.png" alt="module2">
+        <img class = "image" src="static/images/stakeholderanimate.jpg" alt="module2">
         <h2 class="module">Stakeholder Module</h2>
-          <a href="/stakeholder_auth"> <button class="button">Stakeholder</button> </a>
+          <a href="/stakeholder_auth"> <button class="button1">Stakeholder</button> </a>
       </div>
 
   </div>
@@ -105,10 +120,9 @@
   </footer>
 
   <div class="top">
-
-    <button >Home</button>
-    <button >About</button>
-    <button >Contact</button>
+    <a href="/"> <button class="button">Home</button> </a>
+    <button class="button" >About</button>
+    <button class="button">Contact</button>
   </div>
 
 </body>
@@ -116,79 +130,3 @@
 
 
 
-
-
-<!--<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Home Page</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            text-align: center;
-            margin-top: 100px;
-        }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-        .btn {
-            font-size: 1.25rem;
-            margin: 10px;
-        }
-
-
-/* The container <div> - needed to position the dropdown content */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-
-/* Dropdown Content (Hidden by Default) */
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-}
-
-/* Links inside the dropdown */
-.dropdown-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-/* Change color of dropdown links on hover */
-.dropdown-content a:hover {background-color: #ddd;}
-
-/* Show the dropdown menu on hover */
-.dropdown:hover .dropdown-content {display: block;}
-
-/* Change the background color of the dropdown button when the dropdown content is shown */
-.dropdown:hover .dropbtn {background-color: #3e8e41;}
-
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Welcome to MediSafe EHR System</h1>
-        <div class="dropdown">
-        <button class="btn btn-primary">LogIn</button>
-            <div class="dropdown-content">
-                <a href="/patient_auth" >Patient Page</a>
-                <a href="/physician" >Physician Page</a>
-                <a href="/records" >Records Page</a>
-            </div>
-</div>
-    </div>
-</body>
-</html> -->

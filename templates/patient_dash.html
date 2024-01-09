@@ -26,9 +26,18 @@
             height: 100vh;
         }
 
-        header {
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             text-align: center;
-            margin-top: 50px;
+            margin-top: 20px;
+        }
+
+        .top {
+            position: fixed;
+            top: 40px;
+            right: 20px;
         }
 
         .logo {
@@ -92,8 +101,7 @@
     <div class="container">
         <h1>My Dashboard</h1>
         <h2>Welcome to MediSafe, {{ session['patient_name'] }}</h2>
-        <h2>Welcome, {{ session['user_email'] }}</h2>
-
+<br>
         <h2>Physician Requests:</h2>
         {% if physician_requests %}
         <table border="1">
@@ -172,6 +180,11 @@
         <p>No stakeholder requests at the moment.</p>
         {% endif %}
     </div>
+<div class="top">
+    <a href="/"> <button class="button">Home</button> </a>
+    <a href="/patient_account"> <button class="button">Account</button> </a>
+    <button >Contact</button>
+  </div>
 </body>
 
 </html>

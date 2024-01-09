@@ -2,22 +2,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Records View - Physician</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Asap">
+
+    <style>
+        body {
+            font-family: "Asap", serif;
+            background-color: #0A1828;
+            color: #BFA181;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logo {
+            width: 160px;
+            height: 160px;
+        }
+
+        .content {
+            margin: 0 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #339999;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            background-color: #0A1828;
+        }
+
+        .module {
+            color: #BFA181;
+            font-size: 20px;
+        }
+
+        .button {
+            background-color: #0A1828;
+            color: #BFA181;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #178582;
+        }
+
+        h1, p {
+            color: #BFA181;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 20px;
+            color: #339999;
+        }
+
+        .top {
+            position: fixed;
+            top: 40px;
+            right: 20px;
+        }
+    </style>
 </head>
 <body>
-<!-- view_patient_records.html -->
 
-<h1>Patient Records</h1>
+<header>
+    <img class="logo" src="static/images/logo.png" alt="Logo">
+</header>
 
-<p>Name: {{ patient_data.name }}</p>
-<p>Gender: {{ patient_data.gender }}</p>
-<p>Email: {{ patient_data.patient_email }}</p>
-<p>Medical Records: {{ patient_data.medical_records }}</p>
-<p>Allergies: {{ patient_data.allergies }}</p>
-<p>Insurance: {{ patient_data.insurance_provider }}</p>
+<div class="content">
+    <div>
+        <h1>Patient Records</h1>
 
-<p><a href="{{ url_for('physician_dashboard') }}">Back to Physician Dashboard</a></p>
+        <p>Name: {{ patient_data.name }}</p>
+        <p>Gender: {{ patient_data.gender }}</p>
+        <p>Email: {{ patient_data.patient_email }}</p>
+        <p>Medical Records: {{ patient_data.medical_records }}</p>
+        <p>Allergies: {{ patient_data.allergies }}</p>
+        <p>Insurance: {{ patient_data.insurance_provider }}</p>
 
+    </div>
+        <a href="/physician_dashboard"><button class="button">Physician Dashboard</button></a>
+
+</div>
+
+<div class="top">
+    <a href="/"> <button class="button">Home</button> </a>
+    <button class="button">About</button>
+    <button class="button">Contact</button>
+</div>
 
 </body>
 </html>

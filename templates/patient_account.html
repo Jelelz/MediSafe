@@ -1,13 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Records Edit - Physician</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Asap">
+
+    <style>
+        body {
+            font-family: "Asap", serif;
+            background-color: #0A1828;
+            color: #BFA181;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logo {
+            width: 160px;
+            height: 160px;
+        }
+
+        .content {
+            margin: 0 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #339999;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #0A1828;
+        }
+
+        .module {
+            color: #BFA181;
+            font-size: 20px;
+        }
+
+        .button {
+            background-color: #0A1828;
+            color: #BFA181;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #178582;
+        }
+
+        h1, p {
+            color: #BFA181;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 20px;
+            color: #339999;
+        }
+
+        .top {
+            position: fixed;
+            top: 40px;
+            right: 20px;
+        }
+    </style>
 </head>
 
 <body>
+<header>
+    <img class="logo" src="static/images/logo.png" alt="Logo">
+</header>
+<div class="content">
+
     <h1>Patient Account</h1>
 
     {% if patient_data %}
@@ -43,9 +128,15 @@
 
             <button type="submit">Update Details</button>
         </form>
+    <a href="/patient_dashboard"><button class="button">Patient Dashboard</button></a>
     {% else %}
         <p>No patient data available.</p>
     {% endif %}
 </body>
-
+</div>
+<div class="top">
+    <a href="/"> <button class="button">Home</button> </a>
+    <button class="button">About</button>
+    <button class="button">Contact</button>
+</div>
 </html>

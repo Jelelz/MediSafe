@@ -2,11 +2,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Records Edit - Physician</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Asap">
+
+    <style>
+        body {
+            font-family: "Asap", serif;
+            background-color: #0A1828;
+            color: #BFA181;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .logo {
+            width: 160px;
+            height: 160px;
+        }
+
+        .content {
+            margin: 0 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #339999;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #0A1828;
+        }
+
+        .module {
+            color: #BFA181;
+            font-size: 20px;
+        }
+
+        .button {
+            background-color: #0A1828;
+            color: #BFA181;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #178582;
+        }
+
+        h1, p {
+            color: #BFA181;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 20px;
+            color: #339999;
+        }
+
+        .top {
+            position: fixed;
+            top: 40px;
+            right: 20px;
+        }
+    </style>
 </head>
 <body>
-<!-- edit_patient_records.html -->
 
+
+<header>
+    <img class="logo" src="static/images/logo.png" alt="Logo">
+</header>
+<div class="content">
 <h1>Edit Patient Records</h1>
 
 <form action="{{ url_for('edit_patient_records') }}" method="post">
@@ -22,19 +107,25 @@
     <input type="text" name="email" id="email" value="{{ patient_data.patient_email }}" disabled><br>
 
     <label for="medical_records">Medical Records:</label>
-    <input type="text" name="medical_records" id="medical_records" placeholder="{{ patient_data.medical_records}}" value="{{patient_data.medical_records}}"><br>
+    <input type="text" name="medical_records" id="medical_records" placeholder="{{ patient_data.medical_records}}" ><br>
 
     <label for="allergies">Allergies:</label>
-    <input type="text" name="allergies" id="allergies" placeholder="{{ patient_data.allergies }}" value="{{ patient_data.allergies }}"><br>
+    <input type="text" name="allergies" id="allergies" placeholder="{{ patient_data.allergies }}" ><br>
 
     <label for="insurance_provider">Insurance Provider:</label>
     <input type="text" name="insurance_provider" id="insurance_provider" value="{{ patient_data.insurance_provider }}" disabled><br>
 
-    <button type="submit">Save Changes</button>
+    <button class="button"  type="submit">Save Changes</button>
 </form>
+    <a href="/physician_dashboard"><button class="button">Physician Dashboard</button></a>
 
-<p><a href="{{ url_for('physician_dashboard') }}">Back to Physician Dashboard</a></p>
+</div>
 
+<div class="top">
+    <a href="/"> <button class="button">Home</button> </a>
+    <button class="button">About</button>
+    <button class="button">Contact</button>
+</div>
 
 </body>
 </html>

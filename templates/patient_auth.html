@@ -11,9 +11,19 @@
         #login-form, #register-form {
             display: none;
         }
-        #logo {
-           width: 160px;
-           height: 160px;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+
+
+        .logo {
+            width: 160px;
+            height: 160px;
         }
 
         body {
@@ -78,7 +88,10 @@
     </style>
 </head>
 <body>
-    <img id="logo"  src="static/images/logo.png" alt="Logo">
+    <header>
+        <img class="logo" src="static/images/logo.png" alt="Logo">
+    </header>
+
     <h1>Welcome to MediSafe</h1>
 
     <div id="login-form">
@@ -135,6 +148,10 @@
             <input type="text" id="insurance_provider" name="insurance_provider" required>
             <br>
 
+            <label for="next_of_kin">Next of Kin:</label>
+            <input type="text" id="next_of_kin" name="next_of_kin" required>
+            <br>
+
 
             <button type="submit" value="Register">Register</button>
         </form>
@@ -154,5 +171,6 @@
             document.getElementById('register-form').style.display = 'block';
         }
     </script>
+
 </body>
 </html>

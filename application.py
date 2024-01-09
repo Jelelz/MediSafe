@@ -33,7 +33,7 @@ class Blockchain:
     def __init__(self, collection1):
         self.chain = []
         self.collection1 = collection1
-        self.current_id = 1  # Used to uniquely identify patients
+        self.current_id = 1  # This will be used to uniquely identify patients
 
     def create_genesis_block(self, data):
         genesis_block = Block('0', data)
@@ -42,7 +42,7 @@ class Blockchain:
 
     def add_block(self, data):
         if not self.chain:
-            # Create a genesis block if the chain is empty
+            # Creating a genesis block if the chain is empty
             self.create_genesis_block(data)
         else:
             previous_block = self.chain[-1]
@@ -93,7 +93,7 @@ class Block:
 
     def calculate_hash(self):
         if self.data is not None:
-            # Convert sets to lists before hashing
+            # Converting sets to lists before hashing
             data_for_hashing = convert_sets_to_lists(self.data)
 
             # Serializing the data to JSON, and handling non-serializable types (some of the self.data cannot be
@@ -129,7 +129,7 @@ class Blockchain1:
     def __init__(self, collection2):
         self.chain = []
         self.collection2 = collection2
-        self.current_id = 1  # Initialize with 1, you can adjust as needed
+        self.current_id = 1
 
     def create_genesis_block1(self, data):
         genesis_block = Block1('0', data)
@@ -138,7 +138,7 @@ class Blockchain1:
 
     def add_block1(self, data):
         if not self.chain:
-            # Create a genesis block if the chain is empty
+            # Creating a genesis block if the chain is empty
             self.create_genesis_block1(data)
         else:
             previous_block = self.chain[-1]
@@ -183,7 +183,7 @@ class Block1:
 
     def calculate_hash(self):
         if self.data is not None:
-            # Convert sets to lists before hashing
+            # Converting sets to lists before hashing
             data_for_hashing = convert_sets_to_lists(self.data)
 
             # Serializing the data to JSON, and handling non-serializable types (some of the self.data cannot be
@@ -219,7 +219,7 @@ class Blockchain2:
     def __init__(self, collection_stakeholder):
         self.chain = []
         self.collection_stakeholder = collection_stakeholder
-        self.current_id = 1  # Will be used to uniquely identify stakeholders
+        self.current_id = 1  # This will be used to uniquely identify stakeholders
 
     def create_genesis_block2(self, data):
         genesis_block = Block2('0', data)
@@ -339,17 +339,17 @@ def patient_auth():
         action = request.form.get('action')
 
         if action == 'login':
-            # Extract login data from request
+            # Extracting login data from request
             patient_email = request.form.get('patient_email')
             password = request.form.get('password')
 
-            # Retrieve corresponding hashed password and email from the database
+            # Retrieving corresponding hashed password and email from the database
             patient_records = blockchain.get_patient_data_by_email(patient_email)
             print("Retrieved patient records", patient_records)
 
             if patient_records is not None:
                 stored_password_hash = patient_records['password']
-                # Verify the password
+                # Verifying the password
                 if check_password_hash(stored_password_hash, password):
                     session['user_email'] = patient_email
                     session['patient_name'] = patient_records['name']
@@ -359,9 +359,9 @@ def patient_auth():
             else:
                 return jsonify({'message': 'Invalid email address'})
 
-        # Handle registration action
+        # Registration action
         elif action == 'register':
-            # Extract registration data from request
+            # Extracting registration data from request
             name = request.form.get('name')
             gender = request.form.get('gender')
             patient_email = request.form.get('patient_email')
@@ -369,8 +369,9 @@ def patient_auth():
             medical_records = request.form.get('medical_records')
             allergies = request.form.get('allergies')
             insurance_provider = request.form.get('insurance_provider')
+            next_of_kin = request.form.get('next_of_kin')
 
-            # Hash the password for storage
+            # Hashing the password for storage
             hashed_password = generate_password_hash(password)
 
             # Patient registration data
@@ -381,13 +382,14 @@ def patient_auth():
                 'password': hashed_password,
                 'medical_records': medical_records,
                 'allergies': allergies,
-                'insurance_provider': insurance_provider
+                'insurance_provider': insurance_provider,
+                'next_of_kin': next_of_kin
             }
 
-            # Debug print
+            # Debug print (Checking for errors)
             print("Patient Data:", patient_data)
 
-            # Check if there is a previous block for the patient
+            # Checking if there is a previous block for the patient
             previous_block = collection1.find_one({'patient_email': patient_email})
 
             # If there is no previous block, set the previous_hash to the genesis block hash
@@ -428,7 +430,7 @@ def physician_auth():
             physician_email = request.form.get('physician_email')
             password = request.form.get('password')
 
-            # Retrieve corresponding hashed password and email from the database
+            # Retrieving corresponding hashed password and email from the database
             physician_records = blockchain1.get_physician_data_by_email(physician_email)
             print("Retrieved physician records", physician_records)
 
@@ -438,15 +440,16 @@ def physician_auth():
                 if check_password_hash(stored_password_hash, password):
                     session['user_email'] = physician_email
                     session['physician_email'] = physician_records['physician_email']
+                    session['name'] = physician_records['name']
                     return redirect(url_for('physician_dashboard'))
                 else:
                     return jsonify({'message': 'Invalid credentials'})
             else:
                 return jsonify({'message': 'Invalid email address'})
 
-        # Handle registration action
+        # Registration action
         elif action == 'register':
-            # Extract registration data from request
+            # Extracting registration data from request
             name = request.form.get('name')
             physician_email = request.form.get('physician_email')
             password = request.form.get('password')
@@ -512,6 +515,7 @@ def stakeholder_auth():
                 # Verify the password
                 if check_password_hash(stored_password_hash, password):
                     session['user_email'] = stakeholder_email
+                    session['user_name'] = stakeholder_records['name']
                     session['stakeholder_email'] = stakeholder_records['stakeholder_email']
                     return redirect(url_for('stakeholder_dashboard'))
                 else:
@@ -569,10 +573,10 @@ def stakeholder_auth():
 @app.route('/patient_dashboard', methods=['GET', 'POST'])
 def patient_dashboard():
     if 'user_email' in session:
-        # Retrieve patient email from the session
+        # Retrieving patient email for session
         patient_email = session.get('user_email')
 
-        # Fetch patient-specific data from the blockchain
+        # Fetching patient-specific data from the blockchain
         patient_data = blockchain.get_patient_data_by_email(patient_email)
 
         # Fetch physician and stakeholder requests for the patient from MongoDB

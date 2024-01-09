@@ -16,15 +16,30 @@
             color: #BFA181;
             margin: 0;
             padding: 0;
+        }
+
+        .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
+            margin-top: 150px;
+
         }
-        header {
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             text-align: center;
-            margin-top: 50px;
+            margin-top: 20px;
+        }
+
+        .top {
+            position: fixed;
+            top: 40px;
+            right: 20px;
         }
 
         .logo {
@@ -89,80 +104,80 @@
     <header>
         <img class="logo" src="static/images/logo.png" alt="Logo">
     </header>
-    <h2>Physician Dashboard</h2>
-    <h2>Welcome, {{ session['user_email'] }}</h2>
-    <h3>Patients List</h3>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Patient Name</th>
-                <th>Patient Email</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for patient in patients_data %}
+    <div class="container">
+        <h2>Physician Dashboard</h2>
+        <br><br><br>
+        <h3>Welcome, {{ session['name'] }}</h3>
+        <h3>Patients List:</h3>
+        <table border="1">
+            <thead>
                 <tr>
-                    <td>{{ patient.name }}</td>
-                    <td>{{ patient.patient_email }}</td>
-                    <td>
-                        <!-- Add your action buttons here (e.g., Send Request) -->
-                        <!-- You can use a form to handle the action -->
-                        <form action="{{ url_for('send_request') }}" method="post">
-                            <input type="hidden" name="physician_email" value="{{ session.user_email }}">
-                            <input type="hidden" name="patient_email" value="{{ patient.patient_email }}">
-                            <button type="submit">Send Request</button>
-                        </form>
-                    </td>
+                    <th>Patient Name</th>
+                    <th>Patient Email</th>
+                    <th>Action</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for patient in patients_data %}
+                    <tr>
+                        <td>{{ patient.name }}</td>
+                        <td>{{ patient.patient_email }}</td>
+                        <td>
+                            <form action="{{ url_for('send_request') }}" method="post">
+                                <input type="hidden" name="physician_email" value="{{ session.user_email }}">
+                                <input type="hidden" name="patient_email" value="{{ patient.patient_email }}">
+                                <button type="submit">Send Request</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <h2>Welcome, {{ session['user_email'] }}</h2>
-
-    <h2>My Requests:</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Patient Name</th>
-                <th>Patient Email</th>
-                <th>Status</th>
-                <th>Records</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for request in physician_requests_data %}
+<br>
+        <h3>My Requests:</h3>
+        <table border="1">
+            <thead>
                 <tr>
-                    <td>{{ request.patient_name }}</td>
-                    <td>{{ request.patient_email }}</td>
-                    <td>{{ request.status }}</td>
-                    <td>
-                        {% if request.status == 'Accepted' %}
-                            <form action="/view_patient_records" method="post">
-                                <input type="hidden" name="patient_email" value="{{ request.patient_email }}">
-                                <button type="submit">View Records</button>
-                            </form>
-                            <form action="/edit_patient_records" method="post">
-                                <input type="hidden" name="patient_email" value="{{ request.patient_email }}">
-                                <button type="submit">Edit Records</button>
-                            </form>
-                        {% elif request.status == 'Pending' %}
-                            Pending
-                        {% elif request.status == 'Revoked' %}
-                            Revoked
-                        {% endif %}
-                    </td>
-                    <td>
-                        <!-- Add any additional action buttons or info here -->
-                    </td>
+                    <th>Patient Name</th>
+                    <th>Patient Email</th>
+                    <th>Status</th>
+                    <th>Records</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
 
-    <!-- Other content for physician dashboard -->
-
+            <tbody>
+                {% for request in physician_requests_data %}
+                    <tr>
+                        <td>{{ request.patient_name }}</td>
+                        <td>{{ request.patient_email }}</td>
+                        <td>{{ request.status }}</td>
+                        <td>
+                            {% if request.status == 'Accepted' %}
+                                <form action="/view_patient_records" method="post">
+                                    <input type="hidden" name="patient_email" value="{{ request.patient_email }}">
+                                    <button type="submit">View Records</button>
+                                </form>
+                                <form action="/edit_patient_records" method="post">
+                                    <input type="hidden" name="patient_email" value="{{ request.patient_email }}">
+                                    <button type="submit">Edit Records</button>
+                                </form>
+                            {% elif request.status == 'Pending' %}
+                                Pending
+                            {% elif request.status == 'Revoked' %}
+                                Revoked
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="top">
+        <a href="/"> <button class="button">Home</button> </a>
+        <button >About</button>
+        <button >Contact</button>
+    </div>
 </body>
 
 </html>
